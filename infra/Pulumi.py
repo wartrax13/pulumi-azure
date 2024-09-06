@@ -82,3 +82,4 @@ pulumi.export("postgresql_connection_string", Output.concat(
     "postgres://", postgres_server.administrator_login, ":", admin_password, "@",
     postgres_server.name, ".postgres.database.azure.com:5432/appdb"
 ))
+pulumi.export("app_service_name", app_service.name)
