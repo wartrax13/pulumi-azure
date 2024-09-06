@@ -1,3 +1,15 @@
+Arpeggio==2.0.2
 asgiref==3.8.1
+attrs==24.2.0
+dill==0.3.8
 Django==5.1.1
+grpcio==1.60.2
+parver==0.5
+protobuf==4.25.4
+pulumi==3.131.0
+pulumi_azure_native==2.59.0
+pulumi_random==4.16.3
+PyYAML==6.0.2
+semver==2.13.0
+six==1.16.0
 sqlparse==0.5.1
