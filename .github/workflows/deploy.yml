@@ -27,7 +27,7 @@ jobs:
       # Faz login na Azure usando o Service Principal
       - name: Azure CLI Login
         run: |
-          az login --service-principal
+          az login
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
