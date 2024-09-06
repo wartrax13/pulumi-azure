@@ -29,6 +29,12 @@ jobs:
           curl -fsSL https://get.pulumi.com | sh
           pulumi version
 
+      # Seleciona o stack do Pulumi ou cria um se ainda não existir
+      - name: Select Pulumi Stack
+        run: pulumi stack select dev || pulumi stack init dev  # Substitua 'dev' pelo nome do seu stack
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
       - name: Deploy Infra using Pulumi
         run: pulumi up --yes
         env:
