@@ -43,17 +43,18 @@ jobs:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # Seleciona o stack do Pulumi ou cria um se ainda não existir
+      - name: Select Pulumi Stack
+        run: pulumi stack select dev-django || pulumi stack init dev-django
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
       # Configura a localização para "Brazil South"
       - name: Configure Pulumi Location
         run: pulumi config set azure-native:location "Brazil South"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-      # Seleciona o stack do Pulumi ou cria um se ainda não existir
-      - name: Select Pulumi Stack
-        run: pulumi stack select dev || pulumi stack init dev-django
-        env:
-          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
       - name: Deploy Infra using Pulumi
         run: pulumi up --yes
