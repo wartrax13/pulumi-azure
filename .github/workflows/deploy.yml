@@ -24,15 +24,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install --no-cache-dir -r requirements.txt  # Instala o Pulumi e outras dependências
 
-      # Faz login na Azure usando o Service Principal
+      # Faz login na Azure usando o Service Principal (sem necessidade de login manual)
       - name: Azure CLI Login
         run: |
-          az login
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          az login --service-principal \
+            --username "${{ secrets.AZURE_CLIENT_ID }}" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"
 
       # Verifica se a autenticação com a Azure foi bem-sucedida
       - name: Azure CLI Login Verification
@@ -44,13 +42,13 @@ jobs:
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-      # Configura a localização para "Brazil South"
+      # Configura a localização para "Brazil South" após selecionar o stack
       - name: Configure Pulumi Location
         run: pulumi config set azure-native:location "Brazil South"
         env:
           PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
 
-
+      # Executa o Pulumi para deploy da infraestrutura
       - name: Deploy Infra using Pulumi
         run: pulumi up --yes
         env:
@@ -60,12 +58,21 @@ jobs:
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # Captura o nome do Resource Group criado pelo Pulumi
+      - name: Get Resource Group Name
+        id: rg_name
+        run: echo "::set-output name=RG_NAME::$(pulumi stack output resource_group_name)"
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      # Compacta o app Django em um arquivo zip
       - name: Zip the Django App
         run: zip -r django-app.zip .
 
+      # Faz o deploy do arquivo .zip para o Azure App Service usando o Resource Group correto
       - name: Deploy Django to Azure App Service
         run: |
-          az webapp deployment source config-zip --resource-group app-resource-group --name django-app --src django-app.zip
+          az webapp deployment source config-zip --resource-group ${{ steps.rg_name.outputs.RG_NAME }} --name django-app --src django-app.zip
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
