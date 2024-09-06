@@ -24,6 +24,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install --no-cache-dir -r requirements.txt  # Instala o Pulumi e outras dependências
           
+      # Faz login na Azure usando o Service Principal
+      - name: Azure CLI Login
+        run: |
+          az login --service-principal \
+            --username $AZURE_CLIENT_ID \
+            --password $AZURE_CLIENT_SECRET \
+            --tenant $AZURE_TENANT_ID
+
       # Verifica se a autenticação com a Azure foi bem-sucedida
       - name: Azure CLI Login Verification
         run: az account show
