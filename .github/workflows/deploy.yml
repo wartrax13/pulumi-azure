@@ -37,11 +37,6 @@ jobs:
       # Verifica se a autenticação com a Azure foi bem-sucedida
       - name: Azure CLI Login Verification
         run: az account show
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # Seleciona o stack do Pulumi ou cria um se ainda não existir
       - name: Select Pulumi Stack
@@ -66,11 +61,11 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Zip the Django App
-        run: zip -r your-app.zip .
+        run: zip -r django-app.zip .
 
       - name: Deploy Django to Azure App Service
         run: |
-          az webapp deployment source config-zip --resource-group app-resource-group --name django-app --src-path your-app.zip
+          az webapp deployment source config-zip --resource-group app-resource-group --name django-app --src django-app.zip
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
