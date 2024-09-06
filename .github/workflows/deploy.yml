@@ -22,10 +22,8 @@ jobs:
       # Faz login na Azure usando o Service Principal (sem necessidade de login manual)
       - name: Azure CLI Login
         run: |
-          az login --service-principal \
-            --u "${{ secrets.AZURE_CLIENT_ID }}" \
-            --p "${{ secrets.AZURE_CLIENT_SECRET }}" \
-            --t "${{ secrets.AZURE_TENANT_ID }}"
+          az login --identity
+
 
       # Verifica se a autenticação com a Azure foi bem-sucedida
       - name: Azure CLI Login Verification
