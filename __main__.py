@@ -90,12 +90,11 @@ app_service = azure_native.web.WebApp(
     resource_group_name=resource_group.name,
     server_farm_id=app_service_plan.id,
     site_config=azure_native.web.SiteConfigArgs(
-        linux_fx_version="PYTHON|3.9",  # Versão do Python
         app_settings=[
             azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="appdb"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_PASSWORD", value=admin_password),
-            azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="your_project.settings"),
+            azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="core.settings"),
             azure_native.web.NameValuePairArgs(name="REDIS_URL", value=Output.concat("redis://", redis_cache.host_name, ":6379")),
         ]
     ),
