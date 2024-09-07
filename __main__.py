@@ -71,7 +71,7 @@ app_service = azure_native.web.WebApp(
     server_farm_id=app_service_plan.id,
     site_config=azure_native.web.SiteConfigArgs(
         app_settings=[
-            azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="appdb"),
+            azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="djangodb"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_PASSWORD", value=admin_password),
             azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="core.settings"),
