@@ -20,59 +20,39 @@ redis_cache = azure_native.cache.Redis(
     )
 )
 
-# _pgsql = azure_native.dbforpostgresql.Server(
-#             "appdb",
-#             resource_group_name=self._rg,
-#             sku=sku,
-#             version="16",
-#             auth_config=azure_native.dbforpostgresql.AuthConfigArgs(
-#                 password_auth=azure_native.dbforpostgresql.PasswordAuthEnum.DISABLED,
-#                 active_directory_auth=azure_native.dbforpostgresql.ActiveDirectoryAuthEnum.ENABLED,
-#                 tenant_id=self._tenant_id,
-#             ),
-#             storage=azure_native.dbforpostgresql.StorageArgs(storage_size_gb=32),
-#             network=azure_native.dbforpostgresql.NetworkArgs(
-#                 delegated_subnet_resource_id=subnet.id,
-#                 private_dns_zone_arm_resource_id=dns.id,
-#             ),
-#             backup=azure.dbforpostgresql.BackupArgs(
-#                 backup_retention_days=7,
-#                 geo_redundant_backup=azure.dbforpostgresql.GeoRedundantBackupEnum.DISABLED,
-#             ),
-#         )
 
-# Create a database
-# db = azure_native.dbforpostgresql.Database(
-#     "appdb",
-#     database_name="appdb",
-#     resource_group_name=self._rg,
-#     server_name=_pgsql.name,
-# )
+# Create a PostgreSQL server in the resource group
+postgres_server = azure_native.dbforpostgresql.Server(
+    "appdb",
+    resource_group_name=resource_group.name,
+    sku=azure_native.dbforpostgresql.SkuArgs(
+        name="Standard_B2ms",
+        tier="Burstable",
+    ),
+    version="16",
+    auth_config=azure_native.dbforpostgresql.AuthConfigArgs(
+        password_auth=azure_native.dbforpostgresql.PasswordAuthEnum.DISABLED,
+        active_directory_auth=azure_native.dbforpostgresql.ActiveDirectoryAuthEnum.ENABLED,
+        tenant_id=os.getenv('AZURE_TENANT_ID'),
+    ),
+    storage=azure_native.dbforpostgresql.StorageArgs(storage_size_gb=32),
+    backup=azure_native.dbforpostgresql.BackupArgs(
+        backup_retention_days=7,
+        geo_redundant_backup=azure_native.dbforpostgresql.GeoRedundantBackupEnum.DISABLED,
+    ),
+)
 
-# Criar um banco de dados PostgreSQL usando `Server`
-# postgres_server = azure_native.dbforpostgresql.Server(
-#     "postgresql-server",
-#     resource_group_name=resource_group.name,
-#     administrator_login="admin",
-#     administrator_login_password=admin_password,
-#     version="11",  # Defina a versão do PostgreSQL
-#     geo_redundant_backup="Disabled",  # Backup georredundante desativado
-#     sku=azure_native.dbforpostgresql.SkuArgs(
-#         name="B_Gen5_1",  # Nome do SKU
-#         tier="Basic",     # Tipo de SKU
-#      # Capacidade
-#     ),
-#     location=resource_group.location
-# )
-
-# Criar o banco de dados PostgreSQL dentro do servidor
+# Create PostgreSQL database once the server has been provisioned
 # postgres_db = azure_native.dbforpostgresql.Database(
 #     "appdb",
 #     resource_group_name=resource_group.name,
-#     server_name=postgres_server.name,
-#     charset="UTF8",
-#     collation="English_United States.1252"
+#     server_name=postgres_server.name,  # Nome do servidor
+#     charset="UTF8",  # Charset do banco de dados
+#     collation="English_United States.1252"  # Collation do banco de dados
 # )
+
+############################################3
+###########################################
 
 # Criar um App Service Plan
 app_service_plan = azure_native.web.AppServicePlan(
@@ -103,9 +83,5 @@ app_service = azure_native.web.WebApp(
 
 # Exportar URLs e Credenciais
 pulumi.export("app_url", Output.concat("https://", app_service.default_host_name))
-# pulumi.export("postgresql_connection_string", Output.concat(
-#     "postgres://", postgres_server.administrator_login, ":", admin_password, "@",
-#     postgres_server.name, ".postgres.database.azure.com:5432/appdb"
-# ))
 pulumi.export("app_service_name", app_service.name)
 pulumi.export("resource_group_name", resource_group.name)
