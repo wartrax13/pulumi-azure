@@ -47,15 +47,13 @@ postgres_db = azure_native.dbforpostgresql.Database(
     collation="English_United States.1252"
 )
 
-# Criar um plano de serviço (App Service Plan)
+# Criar um App Service Plan
 app_service_plan = azure_native.web.AppServicePlan(
-    "asp-django",
+    "appServicePlan",
     resource_group_name=resource_group.name,
-    kind="Linux",
-    reserved=True,
     sku=azure_native.web.SkuDescriptionArgs(
+        name="B1",
         tier="Basic",
-        size="B1"
     )
 )
 
