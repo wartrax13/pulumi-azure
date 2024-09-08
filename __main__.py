@@ -87,6 +87,8 @@ postgres_dns_zone = azure_native.network.PrivateZone(
 app_service_plan = azure_native.web.AppServicePlan(
     "appservice-testando-pulumi-1",
     resource_group_name=resource_group.name,
+    location=resource_group.location,
+    kind="Linux",
     sku=azure_native.web.SkuDescriptionArgs(
         name="B1",
         tier="Basic",
@@ -99,6 +101,7 @@ app_service = azure_native.web.WebApp(
     resource_group_name=resource_group.name,
     server_farm_id=app_service_plan.id,
     site_config=azure_native.web.SiteConfigArgs(
+        linux_fx_version="PYTHON|3.9",
         app_settings=[
             azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="djangodb"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin"),
