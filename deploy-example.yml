@@ -1,0 +1,85 @@
+name: Django Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      # Faz login na Azure usando o Service Principal (sem necessidade de login manual)
+      - name: Azure CLI Login
+        run: |
+          az login
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+
+      # Verifica se a autenticação com a Azure foi bem-sucedida
+      - name: Azure CLI Login Verification
+        run: az account show
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Seleciona o stack do Pulumi ou cria um se ainda não existir
+      - name: Select Pulumi Stack
+        run: pulumi stack select dev-django || pulumi stack init dev-django
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      # Configura a localização para "Brazil South" após selecionar o stack
+      - name: Configure Pulumi Location
+        run: pulumi config set azure-native:location "Brazil South"
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      # Executa o Pulumi para deploy da infraestrutura
+      - name: Deploy Infra using Pulumi
+        run: pulumi up --yes
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Captura o nome do Resource Group e do App Service criado pelo Pulumi
+      - name: Get App Service and Resource Group Names
+        id: get_names
+        run: |
+          echo "RG_NAME=$(pulumi stack output resource_group_name)" >> $GITHUB_ENV
+          echo "APP_NAME=$(pulumi stack output app_service_name)" >> $GITHUB_ENV
+        env:
+          PULUMI_ACCESS_TOKEN: ${{ secrets.PULUMI_ACCESS_TOKEN }}
+
+      # Compacta o app Django em um arquivo zip
+      - name: Zip the Django App
+        run: zip -r django-app.zip . -x "venv/*" ".venv/*" ".git/*" "__pycache__/*" "*.pyc" "node_modules/*"
+
+      # Faz o deploy do arquivo .zip para o Azure App Service usando o nome correto do App Service
+      - name: Deploy Django to Azure App Service
+        run: |
+          az webapp deploy --resource-group ${{ env.RG_NAME }} --name ${{ env.APP_NAME }} --src-path django-app.zip --type zip
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}

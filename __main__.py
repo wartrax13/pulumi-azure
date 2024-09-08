@@ -7,23 +7,29 @@ import os
 admin_password = os.getenv('ADMIN_PASSWORD', 'Admin@123')
 
 # Criar um grupo de recursos
-resource_group = azure_native.resources.ResourceGroup("app-resource-group")
+resource_group = azure_native.resources.ResourceGroup("rg-pulumi", location="Brazil South")
 
-# Criar um Redis para o Celery
-redis_cache = azure_native.cache.Redis(
-    "redis",
+# Criar um Virtual Network (para comunicação privada)
+vnet = azure_native.network.VirtualNetwork(
+    "django-vnet",
     resource_group_name=resource_group.name,
-    sku=azure_native.cache.SkuArgs(
-        name="Basic",
-        family="C",
-        capacity=0  # Definindo o Redis como Basic
+    location=resource_group.location,
+    address_space=azure_native.network.AddressSpaceArgs(
+        address_prefixes=["10.0.0.0/16"]
     )
 )
 
-
-# Create a PostgreSQL server in the resource group
+# Criar Subnet para PostgreSQL e Redis dentro da VNet
+subnet = azure_native.network.Subnet(
+    "subnet",
+    resource_group_name=resource_group.name,
+    virtual_network_name=vnet.name,
+    address_prefix="10.0.1.0/24",
+    private_endpoint_network_policies="Disabled"
+)
+# Criar um servidor PostgreSQL
 postgres_server = azure_native.dbforpostgresql.Server(
-    "appdb",
+    "appdb-testando-pulumi-1",
     resource_group_name=resource_group.name,
     sku=azure_native.dbforpostgresql.SkuArgs(
         name="Standard_B2ms",
@@ -42,21 +48,44 @@ postgres_server = azure_native.dbforpostgresql.Server(
     ),
 )
 
-# Create PostgreSQL database once the server has been provisioned
-# postgres_db = azure_native.dbforpostgresql.Database(
-#     "appdb",
-#     resource_group_name=resource_group.name,
-#     server_name=postgres_server.name,  # Nome do servidor
-#     charset="UTF8",  # Charset do banco de dados
-#     collation="English_United States.1252"  # Collation do banco de dados
-# )
+# Criar o banco de dados PostgreSQL após o servidor estar pronto
+db = azure_native.dbforpostgresql.Database(
+    "db-testando-pulumi-1",
+    database_name="testando-pulumi-1",
+    resource_group_name=resource_group.name,
+    server_name=postgres_server.name,
+)
 
-############################################3
-###########################################
+# Criar um Redis para o Celery
+redis_cache = azure_native.cache.Redis(
+    "redis-testando-pulumi-1",
+    resource_group_name=resource_group.name,
+    sku=azure_native.cache.SkuArgs(
+        name="Basic",
+        family="C",
+        capacity=0  # Definindo o Redis como Basic
+    )
+)
+
+# Private DNS Zone para Redis
+redis_dns_zone = azure_native.network.PrivateZone(
+    "redis-dns",
+    resource_group_name=resource_group.name,
+    location="Global",
+    private_zone_name="privatelink.redis.cache.windows.net"
+)
+
+# Private DNS Zone para PostgreSQL
+postgres_dns_zone = azure_native.network.PrivateZone(
+    "postgres-dns",
+    resource_group_name=resource_group.name,
+    location="Global",  # DNS zones geralmente são globais
+    private_zone_name="privatelink.postgres.database.azure.com"
+)
 
 # Criar um App Service Plan
 app_service_plan = azure_native.web.AppServicePlan(
-    "appServicePlan",
+    "appservice-testando-pulumi-1",
     resource_group_name=resource_group.name,
     sku=azure_native.web.SkuDescriptionArgs(
         name="B1",
@@ -66,7 +95,7 @@ app_service_plan = azure_native.web.AppServicePlan(
 
 # Criar o App Service para hospedar a aplicação Django
 app_service = azure_native.web.WebApp(
-    "django-app",
+    "django-app-testando-pulumi-1",
     resource_group_name=resource_group.name,
     server_farm_id=app_service_plan.id,
     site_config=azure_native.web.SiteConfigArgs(
@@ -81,7 +110,7 @@ app_service = azure_native.web.WebApp(
     location=resource_group.location
 )
 
-# Exportar URLs e Credenciais
+# # Exportar URLs e Credenciais
 pulumi.export("app_url", Output.concat("https://", app_service.default_host_name))
 pulumi.export("app_service_name", app_service.name)
 pulumi.export("resource_group_name", resource_group.name)
