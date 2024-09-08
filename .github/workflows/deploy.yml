@@ -72,12 +72,12 @@ jobs:
 
       # Compacta o app Django em um arquivo zip
       - name: Zip the Django App
-        run: zip -r django-app.zip .
+        run: zip -r django-app.zip . -x "venv/*" ".venv/*" ".git/*" "__pycache__/*" "*.pyc" "Pulumi*" "node_modules/*"
 
       # Faz o deploy do arquivo .zip para o Azure App Service usando o nome correto do App Service
       - name: Deploy Django to Azure App Service
         run: |
-          az webapp deploy config-zip --resource-group ${{ env.RG_NAME }} --name ${{ env.APP_NAME }} --src-path django-app.zip
+          az webapp deploy --resource-group ${{ env.RG_NAME }} --name ${{ env.APP_NAME }} --src-path django-app.zip --type zip
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
