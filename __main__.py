@@ -36,6 +36,8 @@ postgres_server = azure_native.dbforpostgresql.Server(
         tier="Burstable",
     ),
     version="16",
+    administrator_login="admin_user",
+    administrator_login_password=admin_password,
     auth_config=azure_native.dbforpostgresql.AuthConfigArgs(
         password_auth=azure_native.dbforpostgresql.PasswordAuthEnum.DISABLED,
         active_directory_auth=azure_native.dbforpostgresql.ActiveDirectoryAuthEnum.ENABLED,
@@ -88,7 +90,8 @@ app_service_plan = azure_native.web.AppServicePlan(
     "appservice-testando-pulumi-1",
     resource_group_name=resource_group.name,
     location=resource_group.location,
-    kind="Linux",
+    kind="linux",
+    reserved=True,
     sku=azure_native.web.SkuDescriptionArgs(
         name="B1",
         tier="Basic",
@@ -101,15 +104,17 @@ app_service = azure_native.web.WebApp(
     resource_group_name=resource_group.name,
     server_farm_id=app_service_plan.id,
     site_config=azure_native.web.SiteConfigArgs(
-        linux_fx_version="PYTHON:3.10",
+        linux_fx_version="PYTHON|3.10",
         app_settings=[
             azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="djangodb"),
-            azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin"),
+            azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin_user"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_PASSWORD", value=admin_password),
             azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="core.settings"),
             azure_native.web.NameValuePairArgs(name="REDIS_URL", value=Output.concat("redis://", redis_cache.host_name, ":6379")),
-        ]
+        ],
     ),
+    vnet_route_all_enabled=True,
+    virtual_network_subnet_id=subnet.id,
     location=resource_group.location
 )
 
