@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --no-cache-dir -r requirements.txt
+          pip install -r requirements.txt
 
       # Seleciona o stack do Pulumi ou cria um se ainda não existir
       - name: Select Pulumi Stack
@@ -72,7 +72,7 @@ jobs:
 
       # Compacta o app Django em um arquivo zip
       - name: Zip the Django App
-        run: zip -r django-app.zip . -x "venv/*" ".venv/*" ".git/*" "__pycache__/*" "*.pyc" "Pulumi*" "node_modules/*"
+        run: zip -r django-app.zip . -x "venv/*" ".venv/*" ".git/*" "__pycache__/*" "*.pyc" "node_modules/*"
 
       # Faz o deploy do arquivo .zip para o Azure App Service usando o nome correto do App Service
       - name: Deploy Django to Azure App Service
