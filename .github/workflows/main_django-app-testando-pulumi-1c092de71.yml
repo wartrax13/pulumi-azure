@@ -32,15 +32,15 @@ jobs:
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      # - name: Zip artifact for deployment
-      #   run: zip release.zip ./* -r
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: |
-            .
+            release.zip
             !venv/
 
   deploy:
@@ -58,8 +58,8 @@ jobs:
         with:
           name: python-app
 
-      # - name: Unzip artifact for deployment
-      #   run: unzip release.zip
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
 
       
       - name: Login to Azure
@@ -73,7 +73,7 @@ jobs:
         uses: Azure/appservice-settings@v1
         with:  
           app-name: 'django-app-testando-pulumi-1c092de71'
-          app-settings-json: '[{ "name": "DISABLE_COLLECTSTATIC", "value": "true" }, { "name": "POST_BUILD_COMMAND",  "value": "python manage.py makemigrations && python manage.py migrate" }, { "name": "SCM_DO_BUILD_DURING_DEPLOYMENT", "value": "true" }, { "name": "DJANGO_ENV", "value": "production"}, { "name": "ENABLE_ORYX_BUILD", "value": "true"}]'
+          app-settings-json: '[{ "name": "POST_BUILD_COMMAND",  "value": "python manage.py makemigrations && python manage.py migrate" }, { "name": "DJANGO_ENV", "value": "production"}, { "name": "ENABLE_ORYX_BUILD", "value": "true"}]'
       
       - name: Deploy to App Service
         uses: azure/webapps-deploy@v2
