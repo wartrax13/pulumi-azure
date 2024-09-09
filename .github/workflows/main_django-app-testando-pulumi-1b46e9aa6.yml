@@ -62,8 +62,6 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: Activate virtual environment
-        run: source venv/bin/activate
       
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -72,7 +70,3 @@ jobs:
           app-name: 'django-app-testando-pulumi-1b46e9aa6'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7B5E15F0A38F4BF9A59942EE641E6F54 }}
-
-      # - name: Run database migrations
-      #   run: |
-      #     python manage.py migrate
