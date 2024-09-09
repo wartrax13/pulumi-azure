@@ -113,14 +113,13 @@ app_service = azure_native.web.WebApp(
             azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="core.settings"),
             azure_native.web.NameValuePairArgs(name="REDIS_URL", value=Output.concat("redis://", redis_cache.host_name, ":6379")),
         ],
-        # app_command_line="python manage.py migrate && python manage.py collectstatic --noinput"  # Comando múltiplo
     ),
     vnet_route_all_enabled=True,
     virtual_network_subnet_id=subnet.id,
     location=resource_group.location
 )
 
-# # Exportar URLs e Credenciais
+# Exportar URLs e Credenciais
 pulumi.export("app_url", Output.concat("https://", app_service.default_host_name))
 pulumi.export("app_service_name", app_service.name)
 pulumi.export("resource_group_name", resource_group.name)

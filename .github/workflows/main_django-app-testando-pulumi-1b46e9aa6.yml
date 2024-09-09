@@ -67,6 +67,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'django-app-testando-pulumi-1b46e9aa6'
+          app-name: 'django-app-testando-pulumi-138c2c452'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_7B5E15F0A38F4BF9A59942EE641E6F54 }}
