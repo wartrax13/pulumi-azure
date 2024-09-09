@@ -32,8 +32,8 @@ jobs:
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+      # - name: Zip artifact for deployment
+      #   run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
@@ -58,8 +58,8 @@ jobs:
         with:
           name: python-app
 
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
+      # - name: Unzip artifact for deployment
+      #   run: unzip release.zip
 
       
       - name: Login to Azure
@@ -68,11 +68,22 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E5165573B73E417186849FFDFCCC7DA1 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_8EF0979079BA4C04B448C3372D6C4024 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_1AE668283FAB48DC82EFB37FE661DDCB }}
-
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
+      
+      - name: Disable static collection and set migration command on App Service
+        uses: Azure/appservice-settings@v1
+        with:  
+          app-name: 'django-app-testando-pulumi-1c092de71'
+          app-settings-json: '[{ "name": "DISABLE_COLLECTSTATIC", "value": "true" }, { "name": "POST_BUILD_COMMAND",  "value": "python manage.py makemigrations && python manage.py migrate" }, { "name": "SCM_DO_BUILD_DURING_DEPLOYMENT", "value": "true" }, { "name": "DJANGO_ENV", "value": "production"}, { "name": "ENABLE_ORYX_BUILD", "value": "true"}]'
+      
+      - name: Deploy to App Service
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'django-app-testando-pulumi-1c092de71'
-          slot-name: 'Production'
+      
+          # - name: 'Deploy to Azure Web App'
+      #   uses: azure/webapps-deploy@v3
+      #   id: deploy-to-webapp
+      #   with:
+      #     app-name: 'django-app-testando-pulumi-1c092de71'
+      #     slot-name: 'Production'
           

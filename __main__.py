@@ -106,7 +106,7 @@ app_service = azure_native.web.WebApp(
     site_config=azure_native.web.SiteConfigArgs(
         linux_fx_version="PYTHON|3.10",
         app_settings=[
-            azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="testando-pulumi-1"),
+            azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value=db.name),
             azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin_user"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_PASSWORD", value=admin_password),
             azure_native.web.NameValuePairArgs(name="POSTGRES_HOST", value=Output.concat(postgres_server.name, ".postgres.database.azure.com")),
@@ -125,3 +125,4 @@ pulumi.export("app_service_name", app_service.name)
 pulumi.export("resource_group_name", resource_group.name)
 pulumi.export("database_name", db.name)
 pulumi.export("postgres_server_name", postgres_server.name)
+pulumi.export("postgres_adm_name", postgres_server.administrator_login)
