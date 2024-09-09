@@ -113,7 +113,7 @@ app_service = azure_native.web.WebApp(
             azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="core.settings"),
             azure_native.web.NameValuePairArgs(name="REDIS_URL", value=Output.concat("redis://", redis_cache.host_name, ":6379")),
         ],
-        app_command="python manage.py migrate && python manage.py collectstatic --noinput"  # Comando múltiplo
+        # app_command_line="python manage.py migrate && python manage.py collectstatic --noinput"  # Comando múltiplo
     ),
     vnet_route_all_enabled=True,
     virtual_network_subnet_id=subnet.id,
