@@ -109,9 +109,11 @@ app_service = azure_native.web.WebApp(
             azure_native.web.NameValuePairArgs(name="POSTGRES_DB", value="djangodb"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_USER", value="admin_user"),
             azure_native.web.NameValuePairArgs(name="POSTGRES_PASSWORD", value=admin_password),
+            azure_native.web.NameValuePairArgs(name="POSTGRES_HOST", value=Output.concat(postgres_server.name, ".postgres.database.azure.com")),
             azure_native.web.NameValuePairArgs(name="DJANGO_SETTINGS_MODULE", value="core.settings"),
             azure_native.web.NameValuePairArgs(name="REDIS_URL", value=Output.concat("redis://", redis_cache.host_name, ":6379")),
         ],
+        app_command_line="./build_script.sh"
     ),
     vnet_route_all_enabled=True,
     virtual_network_subnet_id=subnet.id,
